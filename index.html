@@ -78,13 +78,16 @@ display:none;
 display:block;
 }
 
+/* CARD WRAPPER */
+
 .card-wrapper{
 position:relative;
+width:100%;
 display:flex;
 justify-content:center;
 }
 
-/* Responsive card scaling */
+/* RESPONSIVE CARD SCALE */
 
 @media(max-width:768px){
 .card-wrapper{
@@ -101,7 +104,7 @@ margin-bottom:-50px;
 }
 }
 
-/* Card */
+/* CARD */
 
 .perle-card{
 position:relative;
@@ -114,7 +117,7 @@ max-width:100%;
 height:auto;
 }
 
-/* Avatar */
+/* AVATAR */
 
 .avatar{
 position:absolute;
@@ -134,7 +137,7 @@ max-height:110%;
 object-fit:contain;
 }
 
-/* Username */
+/* USERNAME */
 
 .username{
 position:absolute;
@@ -149,13 +152,15 @@ overflow:hidden;
 text-overflow:ellipsis;
 }
 
+/* DESKTOP FIX */
+
 @media(min-width:1200px){
 .username{
 font-size:32px;
 }
 }
 
-/* Barcode */
+/* BARCODE */
 
 .barcode{
 position:absolute;
@@ -202,7 +207,7 @@ Perle Card Generator
 <img src="perle-card-template.png" class="card-base">
 
 <div class="avatar">
-<img id="avatar" crossorigin="anonymous">
+<img id="avatar">
 </div>
 
 <div class="username" id="name"></div>
@@ -223,7 +228,7 @@ Perle Card Generator
 
 <script>
 
-/* Generate barcode number */
+/* barcode generator */
 
 function generateNumber(username){
 
@@ -240,7 +245,7 @@ return num.slice(0,4)+"-"+num.slice(4,8)+"-"+num.slice(8,12)
 
 }
 
-/* Format username */
+/* username format */
 
 function formatUsername(username){
 
@@ -252,34 +257,25 @@ return "@"+username
 
 }
 
-/* Load avatar safely */
+/* avatar loader */
 
 function loadAvatar(username){
 
-return new Promise((resolve)=>{
-
 const img=document.getElementById("avatar")
-
-img.crossOrigin="anonymous"
-
-img.onload=()=>resolve()
-
-img.onerror=function(){
-
-img.src=`https://ui-avatars.com/api/?name=${username}&size=256&background=random`
-img.onload=()=>resolve()
-
-}
 
 img.src=`https://unavatar.io/twitter/${username}`
 
-})
+img.onerror=function(){
+
+img.src=`https://ui-avatars.com/api/?name=${username}&size=256`
 
 }
 
-/* Generate card */
+}
 
-async function generateCard(){
+/* generate card */
+
+function generateCard(){
 
 let username=document.getElementById("username").value.trim()
 
@@ -291,13 +287,13 @@ document.getElementById("name").innerText=formatUsername(username)
 
 document.getElementById("barcode").innerText=generateNumber(username)
 
-await loadAvatar(username)
+loadAvatar(username)
 
 document.getElementById("preview").classList.add("show")
 
 }
 
-/* Download card */
+/* download */
 
 async function downloadCard(){
 
@@ -305,16 +301,14 @@ const card=document.getElementById("capture")
 
 const canvas=await html2canvas(card,{
 scale:4,
-useCORS:true,
-allowTaint:true,
-backgroundColor:null
+useCORS:true
 })
 
 const link=document.createElement("a")
 
 link.download="perle-card.png"
 
-link.href=canvas.toDataURL("image/png")
+link.href=canvas.toDataURL()
 
 link.click()
 
