@@ -65,6 +65,10 @@ font-weight:bold;
 cursor:pointer;
 }
 
+button:hover{
+opacity:0.9;
+}
+
 .card-preview{
 margin-top:30px;
 display:none;
@@ -73,26 +77,27 @@ text-align:center;
 
 .perle-card{
 position:relative;
+width:520px;
+height:auto;
 display:inline-block;
 }
 
+/* template */
+
 .card-base{
-width:100%;
-max-width:520px;
+width:520px;
 display:block;
 }
 
-/* avatar */
+/* profile */
 
 .profile-pic{
 position:absolute;
-left:7%;
-top:28%;
-width:29%;
-height:46%;
-display:flex;
-align-items:center;
-justify-content:center;
+left:6.5%;
+top:29%;
+width:26%;
+height:44%;
+overflow:hidden;
 }
 
 .profile-pic img{
@@ -101,32 +106,34 @@ height:100%;
 object-fit:cover;
 }
 
-/* username FIX */
+/* username */
 
 .username{
 position:absolute;
 left:40%;
-top:51%;
-font-size:32px;
+top:52%;
+width:48%;
 font-weight:bold;
 color:#333;
-max-width:50%;
 white-space:nowrap;
 overflow:hidden;
 text-overflow:ellipsis;
 }
 
-/* barcode FIX */
+/* barcode */
 
 .barcode{
 position:absolute;
 left:40%;
-top:68%;
+top:69%;
+width:48%;
 font-size:18px;
 font-family:"Courier New",monospace;
 letter-spacing:2px;
 color:#666;
 }
+
+/* download */
 
 .download{
 margin-top:20px;
@@ -145,7 +152,7 @@ background:linear-gradient(135deg,#10b981,#34d399);
 Perle Card Generator
 </h1>
 
-<input id="username" placeholder="Enter username">
+<input id="username" placeholder="Enter Twitter Username">
 
 <button onclick="generateCard()">Generate Card</button>
 
@@ -171,89 +178,129 @@ Perle Card Generator
 
 </div>
 
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
 <script>
 
-/* barcode generator */
+/* ---------- barcode generator ---------- */
 
-function generateNumber(username){
+function generateBarcode(username){
 
-let hash=0;
+let hash = 0;
 
 for(let i=0;i<username.length;i++){
-hash=((hash<<5)-hash)+username.charCodeAt(i);
-hash|=0;
+
+hash = username.charCodeAt(i) + ((hash << 5) - hash);
+
 }
 
-let num=Math.abs(hash).toString().padStart(12,"0");
+let num = Math.abs(hash).toString().padStart(12,"0");
 
 return num.slice(0,4)+"-"+num.slice(4,8)+"-"+num.slice(8,12);
 
 }
 
-/* username shrink logic */
+
+/* ---------- username formatter ---------- */
 
 function formatUsername(name){
 
-if(name.length>12){
+name = name.replace("@","");
+
+if(name.length > 13){
+
 return "@"+name.substring(0,10)+"...";
+
 }
 
 return "@"+name;
 
 }
 
-/* dynamic font scaling */
+
+/* ---------- font scaling ---------- */
 
 function adjustFont(name){
 
-const el=document.getElementById("name");
+const el = document.getElementById("name");
 
-if(name.length>10){
-el.style.fontSize="26px";
+if(name.length > 12){
+
+el.style.fontSize = "24px";
+
 }
-else if(name.length>7){
-el.style.fontSize="28px";
+
+else if(name.length > 9){
+
+el.style.fontSize = "26px";
+
 }
+
+else if(name.length > 6){
+
+el.style.fontSize = "28px";
+
+}
+
 else{
-el.style.fontSize="32px";
-}
+
+el.style.fontSize = "32px";
 
 }
 
-async function generateCard(){
+}
 
-const username=document.getElementById("username").value.trim().replace("@","");
+
+/* ---------- generate card ---------- */
+
+function generateCard(){
+
+let username = document.getElementById("username").value.trim();
 
 if(!username) return;
 
-document.getElementById("name").innerText=formatUsername(username);
+username = username.replace("@","");
+
+/* username */
+
+const formatted = formatUsername(username);
+
+document.getElementById("name").innerText = formatted;
 
 adjustFont(username);
 
-document.getElementById("barcode").innerText=generateNumber(username);
+/* barcode */
 
-document.getElementById("avatar").src=`https://unavatar.io/x/${username}`;
+document.getElementById("barcode").innerText = generateBarcode(username);
 
-document.getElementById("preview").style.display="block";
+/* avatar */
+
+document.getElementById("avatar").src = `https://unavatar.io/x/${username}`;
+
+/* show preview */
+
+document.getElementById("preview").style.display = "block";
 
 }
 
+
+/* ---------- download ---------- */
+
 async function downloadCard(){
 
-const card=document.getElementById("capture");
+const card = document.getElementById("capture");
 
-const canvas=await html2canvas(card,{
+const canvas = await html2canvas(card,{
 scale:3,
 useCORS:true
 });
 
-const link=document.createElement("a");
+const link = document.createElement("a");
 
-link.download="perle-card.png";
+link.download = "perle-card.png";
 
-link.href=canvas.toDataURL();
+link.href = canvas.toDataURL();
 
 link.click();
 
