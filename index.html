@@ -11,10 +11,10 @@
 margin:0;
 padding:0;
 box-sizing:border-box;
+font-family:Arial, Helvetica, sans-serif;
 }
 
 body{
-font-family:Arial, Helvetica, sans-serif;
 background:linear-gradient(135deg,#4f46e5,#9333ea);
 min-height:100vh;
 display:flex;
@@ -39,37 +39,19 @@ display:flex;
 align-items:center;
 justify-content:center;
 gap:10px;
-color:#222;
 }
 
 .logo{
 width:40px;
-height:40px;
-object-fit:contain;
-}
-
-.input-group{
-margin-bottom:20px;
-}
-
-label{
-display:block;
-margin-bottom:8px;
-font-weight:600;
-color:#555;
 }
 
 input{
 width:100%;
 padding:12px;
-border:2px solid #e4e4e4;
 border-radius:8px;
+border:2px solid #e4e4e4;
+margin-bottom:20px;
 font-size:16px;
-}
-
-input:focus{
-outline:none;
-border-color:#6366f1;
 }
 
 button{
@@ -79,27 +61,8 @@ border:none;
 border-radius:8px;
 background:linear-gradient(135deg,#6366f1,#9333ea);
 color:white;
-font-size:16px;
-font-weight:600;
+font-weight:bold;
 cursor:pointer;
-}
-
-button:hover{
-transform:translateY(-1px);
-}
-
-.loading{
-text-align:center;
-margin-top:12px;
-display:none;
-color:#6366f1;
-}
-
-.error{
-text-align:center;
-margin-top:12px;
-display:none;
-color:#ef4444;
 }
 
 .card-preview{
@@ -108,21 +71,18 @@ display:none;
 text-align:center;
 }
 
-.perle-card-wrapper{
-display:flex;
-justify-content:center;
-}
-
 .perle-card{
 position:relative;
 display:inline-block;
-max-width:100%;
 }
 
 .card-base{
 width:100%;
+max-width:520px;
 display:block;
 }
+
+/* avatar */
 
 .profile-pic{
 position:absolute;
@@ -136,16 +96,18 @@ justify-content:center;
 }
 
 .profile-pic img{
-max-width:100%;
-max-height:100%;
-object-fit:contain;
+width:100%;
+height:100%;
+object-fit:cover;
 }
+
+/* username FIX */
 
 .username{
 position:absolute;
 left:40%;
-top:50%;
-font-size:2.7vw;
+top:51%;
+font-size:32px;
 font-weight:bold;
 color:#333;
 max-width:50%;
@@ -154,38 +116,21 @@ overflow:hidden;
 text-overflow:ellipsis;
 }
 
+/* barcode FIX */
+
 .barcode{
 position:absolute;
 left:40%;
-top:67%;
-font-size:1.6vw;
-font-family:monospace;
+top:68%;
+font-size:18px;
+font-family:"Courier New",monospace;
+letter-spacing:2px;
 color:#666;
 }
 
 .download{
 margin-top:20px;
 background:linear-gradient(135deg,#10b981,#34d399);
-}
-
-canvas{
-display:none;
-}
-
-@media(max-width:768px){
-
-.container{
-padding:20px;
-}
-
-.username{
-font-size:4vw;
-}
-
-.barcode{
-font-size:3vw;
-}
-
 }
 
 </style>
@@ -200,33 +145,23 @@ font-size:3vw;
 Perle Card Generator
 </h1>
 
-<div class="input-group">
-<label>X Username</label>
-<input id="username" placeholder="enter username (without @)">
-</div>
+<input id="username" placeholder="Enter username">
 
 <button onclick="generateCard()">Generate Card</button>
 
-<div class="loading" id="loading">Loading profile...</div>
-<div class="error" id="error">Could not fetch profile image.</div>
-
 <div class="card-preview" id="preview">
-
-<div class="perle-card-wrapper">
 
 <div class="perle-card" id="capture">
 
 <img src="perle-card-template.png" class="card-base">
 
 <div class="profile-pic">
-<img id="avatar" crossorigin="anonymous">
+<img id="avatar">
 </div>
 
 <div class="username" id="name"></div>
 
 <div class="barcode" id="barcode"></div>
-
-</div>
 
 </div>
 
@@ -236,11 +171,11 @@ Perle Card Generator
 
 </div>
 
-<canvas id="canvas"></canvas>
-
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
 <script>
+
+/* barcode generator */
 
 function generateNumber(username){
 
@@ -257,94 +192,53 @@ return num.slice(0,4)+"-"+num.slice(4,8)+"-"+num.slice(8,12);
 
 }
 
+/* username shrink logic */
 
-function shortenName(name){
+function formatUsername(name){
 
-if(name.length>6){
-return "@"+name.substring(0,6)+"...";
+if(name.length>12){
+return "@"+name.substring(0,10)+"...";
 }
 
 return "@"+name;
 
 }
 
+/* dynamic font scaling */
+
+function adjustFont(name){
+
+const el=document.getElementById("name");
+
+if(name.length>10){
+el.style.fontSize="26px";
+}
+else if(name.length>7){
+el.style.fontSize="28px";
+}
+else{
+el.style.fontSize="32px";
+}
+
+}
 
 async function generateCard(){
 
-const input=document.getElementById("username").value.trim();
+const username=document.getElementById("username").value.trim().replace("@","");
 
-const username=input.replace("@","");
+if(!username) return;
 
-const loading=document.getElementById("loading");
+document.getElementById("name").innerText=formatUsername(username);
 
-const error=document.getElementById("error");
-
-const preview=document.getElementById("preview");
-
-if(!username){
-
-error.innerText="Enter username";
-error.style.display="block";
-return;
-
-}
-
-loading.style.display="block";
-error.style.display="none";
-preview.style.display="none";
-
-const sources=[
-
-`https://unavatar.io/x/${username}`,
-`https://avatar.vercel.sh/${username}`,
-`https://ui-avatars.com/api/?name=${username}&size=200`
-
-];
-
-let loaded=false;
-
-for(let url of sources){
-
-if(loaded) break;
-
-try{
-
-const img=new Image();
-
-img.crossOrigin="anonymous";
-
-await new Promise((resolve,reject)=>{
-
-img.onload=()=>resolve();
-img.onerror=reject;
-img.src=url;
-
-});
-
-document.getElementById("avatar").src=url;
-
-loaded=true;
-
-}catch(e){}
-
-}
-
-if(!loaded){
-
-document.getElementById("avatar").src=
-`https://ui-avatars.com/api/?name=${username}&size=200`;
-
-}
-
-document.getElementById("name").innerText=shortenName(username);
+adjustFont(username);
 
 document.getElementById("barcode").innerText=generateNumber(username);
 
-loading.style.display="none";
-preview.style.display="block";
+document.getElementById("avatar").src=`https://unavatar.io/x/${username}`;
+
+document.getElementById("preview").style.display="block";
 
 }
-
 
 async function downloadCard(){
 
@@ -352,30 +246,18 @@ const card=document.getElementById("capture");
 
 const canvas=await html2canvas(card,{
 scale:3,
-useCORS:true,
-backgroundColor:null
+useCORS:true
 });
 
-const url=canvas.toDataURL("image/png");
+const link=document.createElement("a");
 
-const a=document.createElement("a");
+link.download="perle-card.png";
 
-a.href=url;
+link.href=canvas.toDataURL();
 
-a.download="perle-card.png";
-
-document.body.appendChild(a);
-
-a.click();
-
-document.body.removeChild(a);
+link.click();
 
 }
-
-
-document.getElementById("username").addEventListener("keypress",e=>{
-if(e.key==="Enter") generateCard();
-});
 
 </script>
 
